@@ -1,0 +1,88 @@
+name: Docker Deployment
+
+on:
+  push:
+    branches:
+      - 'devin/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: '123456'
+          MYSQL_USER: 'crmeb'
+          MYSQL_PASSWORD: '123456'
+          MYSQL_DATABASE: 'crmeb'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, iconv, json, redis, swoole
+          
+      - name: Copy environment file
+        run: |
+          cp .example.env .env
+          sed -i 's/HOSTNAME = 127.0.0.1/HOSTNAME = localhost/g' .env
+          sed -i 's/DATABASE = crmeb_pro/DATABASE = crmeb/g' .env
+          
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        
+      - name: Set directory permissions
+        run: |
+          chmod -R 777 runtime
+          chmod -R 777 public
+          
+      - name: Build Docker images
+        run: |
+          cd help/docker-compose
+          docker-compose build
+          
+      - name: Start Docker containers
+        run: |
+          cd help/docker-compose
+          docker-compose up -d
+          
+      - name: Check Docker containers
+        run: |
+          cd help/docker-compose
+          docker-compose ps
+          docker-compose logs
+          
+      - name: Run health checks
+        run: |
+          curl -f http://localhost:8080/health || exit 1
+          
+      - name: Stop Docker containers
+        if: always()
+        run: |
+          cd help/docker-compose
+          docker-compose down
