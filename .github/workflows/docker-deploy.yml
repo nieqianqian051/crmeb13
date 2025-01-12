@@ -41,6 +41,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+          docker compose version
+      
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -58,26 +64,27 @@ jobs:
         
       - name: Create and set directory permissions
         run: |
-          mkdir -p runtime
-          mkdir -p public/uploads
-          chmod -R 777 runtime
-          chmod -R 777 public
+          sudo mkdir -p runtime
+          sudo mkdir -p public/uploads
+          sudo chmod -R 777 runtime
+          sudo chmod -R 777 public
+          ls -la runtime
           
       - name: Build Docker images
         run: |
           cd help/docker-compose
-          docker-compose build
+          docker compose build
           
       - name: Start Docker containers
         run: |
           cd help/docker-compose
-          docker-compose up -d
+          docker compose up -d
           
       - name: Check Docker containers
         run: |
           cd help/docker-compose
-          docker-compose ps
-          docker-compose logs
+          docker compose ps
+          docker compose logs
           
       - name: Run health checks
         run: |
@@ -87,4 +94,4 @@ jobs:
         if: always()
         run: |
           cd help/docker-compose
-          docker-compose down
+          docker compose down
