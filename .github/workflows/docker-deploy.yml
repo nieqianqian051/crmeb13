@@ -56,8 +56,10 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
         
-      - name: Set directory permissions
+      - name: Create and set directory permissions
         run: |
+          mkdir -p runtime
+          mkdir -p public/uploads
           chmod -R 777 runtime
           chmod -R 777 public
           
