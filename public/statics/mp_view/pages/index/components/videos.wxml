@@ -1,0 +1,1 @@
+<view style="{{$root.s0}}" class="data-v-a756a286"><view class="video-box data-v-a756a286" style="{{$root.s1}}" id="myVideo"><video class="video data-v-a756a286" object-fit="cover" src="{{dataConfig.videoConfig.url}}" poster="{{dataConfig.imgConfig.url}}" controls="{{true}}"></video></view></view>
