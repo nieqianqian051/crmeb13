@@ -64,3 +64,16 @@ public/statics/mp_view/
 vendor/alipaysdk/easysdk/java/
 *.xlsx
 *.mp3
+
+# Ignore public directory compiled assets and temporary files
+public/supplier/view_admin/
+public/statics/
+public/assets/
+public/install/
+public/*.html
+public/*.php
+public/*.ico
+public/*.htaccess
+public/upgrade/
+public/**/.DS_Store
+
