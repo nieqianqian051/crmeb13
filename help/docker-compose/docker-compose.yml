@@ -3,8 +3,7 @@ services:
   # mysql 容器
   mysql_pro:
     container_name: mysql_pro #指定容器名
-#    image: daocloud.io/library/mysql:5.7.5-m15 #M1芯片可以采用这个镜像
-    image: mysql:5.7 #一般电脑可以用这个镜像
+    image: mysql:8.0 #MySQL 8.0 ARM64兼容镜像
     ports:
       - 3366:3306
     # 环境变量
@@ -12,7 +11,7 @@ services:
       TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: '123456'
       MYSQL_USER: 'crmeb'
-      MYSQL_PASS: '123456'
+      MYSQL_PASSWORD: '123456'
       MYSQL_DATABASE: 'crmeb'
     privileged: true
     command:
@@ -22,16 +21,17 @@ services:
        --lower_case_table_names=1
        --max_allowed_packet=128M
        --default-authentication-plugin=mysql_native_password
-       --sql-mode="NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+       --sql-mode="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION"
     working_dir: /var/lib/mysql
     volumes:
       - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - ./mysql/conf.d:/etc/mysql/conf.d
       - ./mysql/data:/var/lib/mysql #挂载数据目录到本地
       - ./mysql/log:/var/log/mysql
     networks:
       app_net:
         # 固定子网ip，网段必须在子网络192.168.*.*
-        ipv4_address: 192.168.10.13
+        ipv4_address: 172.28.0.13
   # redis 容器
   redis_pro:
     container_name: redis_pro
@@ -44,7 +44,7 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     networks:
       app_net:
-        ipv4_address: 192.168.10.14
+        ipv4_address: 172.28.0.14
   # php 容器
   crmeb_pro:
     container_name: crmeb_pro #指定容器名
@@ -61,18 +61,22 @@ services:
     working_dir: /var/www
     volumes:
       - ../../:/var/www #程序运行目录
-      - ../../runtime:/var/www/temp #程序缓存目录
+      - ../../runtime:/var/www/runtime #程序缓存目录
       - ./php/php-ini-overrides.ini:/etc/php/8.0/fpm/conf.d/99-overrides.ini
-    command:
+    command: >
+      sh -c "
+        chmod -R 777 /var/www/public &&
+        chmod -R 777 /var/www/runtime &&
         php think swoole
+      "
     networks:
       app_net:
-        ipv4_address: 192.168.10.15
+        ipv4_address: 172.28.0.15
 networks: #网络配置
   app_net: #网络名称
     driver: bridge
     ipam: #网络配置
       driver: default
       config:
-        - subnet: 192.168.10.0/24 #IP区间
+        - subnet: 172.28.0.0/24 #IP区间
 
