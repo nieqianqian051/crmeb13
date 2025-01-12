@@ -22,6 +22,16 @@ vendor/alipaysdk/easysdk/java/
 *.xlsx
 *.mp3
 
+# Ignore all public directory compiled assets
+public/assets/
+public/statics/
+public/install/
+public/*.html
+public/*.php
+public/*.ico
+public/*.htaccess
+public/upgrade/
+
 # Ignore compiled assets and temporary files
 .DS_Store
 **/.DS_Store
